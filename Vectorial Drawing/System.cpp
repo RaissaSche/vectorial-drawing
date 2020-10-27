@@ -75,43 +75,18 @@ int System::SystemSetup()
 void System::Run()
 {
 	glm::mat4 ortho = glm::mat4(1.0f);
-	ortho = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+	ortho = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -0.1f, 100.0f);
 
 	int orthoU = glGetUniformLocation(coreShader.program, "ortho");
 	glUniformMatrix4fv(orthoU, 1, GL_FALSE, glm::value_ptr(ortho));
 	int loc = glGetUniformLocation(coreShader.program, "model");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-
+	
 	coreShader.Use();
 
-	GLfloat vertices[] =
-	{
-		// Positions         // Textures
-
-		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // Top Right
-		 0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // Bottom Right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // Bottom Left
-
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // Bottom Left
-		-0.5f,  0.5f, 0.0f,   0.0f, 1.0f, // Top Left
-		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // Top Right
-	};
-
-	GLuint VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0); // Unbind VAO
+	manager = new Manager();
+	GLuint VAO = 0;
+	int numPoints = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -130,7 +105,10 @@ void System::Run()
 		if (state == GLFW_PRESS) {
 			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
-			Mouse(mx, my);
+			numPoints = mouse(mx, my);
+			if (numPoints >= 4) {
+				VAO = manager->pointsToVBO();
+			}
 		}
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -138,10 +116,12 @@ void System::Run()
 
 		coreShader.Use();
 
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-
+		if (numPoints >= 4) {
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_LINE_STRIP, 0, numPoints);
+			//glDrawArrays(GL_POINTS, 0, 6);
+			glBindVertexArray(0);
+		}
 
 		glfwSwapBuffers(window);
 	}
@@ -155,15 +135,23 @@ void System::Finish()
 	glfwTerminate();
 }
 
-void System::Mouse(double mx, double my)
+int System::mouse(double mx, double my)
 {
-	glm::vec2* mousePos = new glm::vec2(mx, my);
+	glm::vec2* mousePos = new glm::vec2(mx, HEIGHT - my);
 
-	if (points.empty() || points.back() != mousePos) {
-		points.push_back(mousePos);
+	if (manager->getPoints().empty() || arePointsDifferent(mousePos)) {
+		manager->addPoint(mousePos);
 	}
-	if (points.size() >= 4) {
-		//do stuff
-		int i = 0;
+
+	return manager->getPoints().size();
+}
+
+bool System::arePointsDifferent(glm::vec2* point) {
+	
+	glm::vec2* point2 = manager->getPoints().back();
+
+	if (point->x != point2->x && point->y != point2->y) {
+		return true;
 	}
+	return false;
 }

@@ -9,20 +9,11 @@
 #include <stdlib.h>
 #include <chrono>
 #include <math.h>
-#include <vector>
-
-// External Libs
-#include <GL\glew.h>
-#include <GLFW\glfw3.h>
-
-// GLM Includes
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
 
 // Headers
 #include "Shader.h"
 #include "Time.h"
+#include "Manager.h"
 
 class System
 {
@@ -32,7 +23,7 @@ private:
 	int screenWidth, screenHeight;
 	float lastX = 400, lastY = 300;
 	bool firstMouse = true;
-	std::vector<glm::vec2*> points;
+	Manager* manager;
 
 public:
 	GLFWwindow* window;
@@ -50,8 +41,8 @@ public:
 
 	void Finish();
 
-	void Mouse(double mx, double my);
-
+	int mouse(double mx, double my);
+	bool arePointsDifferent(glm::vec2* point);
 };
 
 #endif
