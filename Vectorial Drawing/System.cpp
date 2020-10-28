@@ -60,6 +60,8 @@ int System::OpenGLSetup()
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 
+	glPointSize(10.0f);
+
 	return EXIT_SUCCESS;
 }
 
@@ -119,7 +121,7 @@ void System::Run()
 		if (numPoints >= 4) {
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-			//glDrawArrays(GL_POINTS, 0, 6);
+			glDrawArrays(GL_POINTS, 0, numPoints);
 			glBindVertexArray(0);
 		}
 
