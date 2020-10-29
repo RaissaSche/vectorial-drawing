@@ -70,6 +70,7 @@ int System::SystemSetup()
 
 	coreShader = Shader("Shaders/Core/core.vert", "Shaders/Core/core.frag");
 	coreShader.Use();
+	manager->initializeVAOsVBOs();
 
 	return EXIT_SUCCESS;
 }
@@ -108,8 +109,9 @@ void System::Run()
 			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
 			numPoints = mouse(mx, my);
+			//VAO = manager->curvePointsToVBO();
 			if (numPoints >= 4) {
-				VAO = manager->pointsToVBO();
+				VAO = manager->controlPointsToVBO();
 			}
 		}
 
@@ -117,6 +119,10 @@ void System::Run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		coreShader.Use();
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_LINE_STRIP, 0, numPoints);
+		glBindVertexArray(0);
 
 		if (numPoints >= 4) {
 			glBindVertexArray(VAO);
@@ -139,21 +145,18 @@ void System::Finish()
 
 int System::mouse(double mx, double my)
 {
-	glm::vec2* mousePos = new glm::vec2(mx, HEIGHT - my);
+	glm::vec3* mousePos = new glm::vec3(mx, HEIGHT - my, 0.0f);
 
-	if (manager->getPoints().empty() || arePointsDifferent(mousePos)) {
-		manager->addPoint(mousePos);
+	if (manager->getControlPoints().empty() || arePointsDifferent(mousePos)) {
+		manager->addControlPoint(mousePos);
 	}
 
-	return manager->getPoints().size();
+	return manager->getControlPoints().size();
 }
 
-bool System::arePointsDifferent(glm::vec2* point) {
+bool System::arePointsDifferent(glm::vec3* point) {
 	
-	glm::vec2* point2 = manager->getPoints().back();
+	glm::vec3* point2 = manager->getControlPoints().back();
 
-	if (point->x != point2->x && point->y != point2->y) {
-		return true;
-	}
-	return false;
+	return point->x != point2->x && point->y != point2->y;
 }

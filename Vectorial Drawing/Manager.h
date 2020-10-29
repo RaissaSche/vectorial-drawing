@@ -14,12 +14,17 @@
 class Manager
 {
 private:
-	std::vector<glm::vec2*> points;
+	std::vector<glm::vec3*> controlPoints;
+	std::vector<float> curvePoints;
+	GLuint VAOcontrol, VBOcontrol,
+		VAObspline, VBObspline;
 
 public:
-	void casteljau();
-	GLuint pointsToVBO();
-	std::vector<glm::vec2*> getPoints();
-	void setPoints(std::vector<glm::vec2*> points);
-	void addPoint(glm::vec2* point);
+	//void createCasteljau();
+	void createBSpline();
+	void initializeVAOsVBOs();
+	GLuint controlPointsToVBO();
+	GLuint curvePointsToVBO();
+	std::vector<glm::vec3*> getControlPoints();
+	void addControlPoint(glm::vec3* point);
 };

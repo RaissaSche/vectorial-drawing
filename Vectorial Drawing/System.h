@@ -42,7 +42,7 @@ public:
 	void Finish();
 
 	int mouse(double mx, double my);
-	bool arePointsDifferent(glm::vec2* point);
+	bool arePointsDifferent(glm::vec3* point);
 };
 
 #endif
