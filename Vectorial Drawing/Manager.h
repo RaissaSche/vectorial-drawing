@@ -26,5 +26,6 @@ public:
 	GLuint controlPointsToVBO();
 	GLuint curvePointsToVBO();
 	std::vector<glm::vec3*> getControlPoints();
+	std::vector<float> getCurvePoints();
 	void addControlPoint(glm::vec3* point);
 };

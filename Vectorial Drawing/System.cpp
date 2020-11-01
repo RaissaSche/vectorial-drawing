@@ -70,7 +70,6 @@ int System::SystemSetup()
 
 	coreShader = Shader("Shaders/Core/core.vert", "Shaders/Core/core.frag");
 	coreShader.Use();
-	manager->initializeVAOsVBOs();
 
 	return EXIT_SUCCESS;
 }
@@ -88,6 +87,7 @@ void System::Run()
 	coreShader.Use();
 
 	manager = new Manager();
+	manager->initializeVAOsVBOs();
 	GLuint VAO = 0;
 	int numPoints = 0;
 
@@ -109,9 +109,11 @@ void System::Run()
 			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
 			numPoints = mouse(mx, my);
-			//VAO = manager->curvePointsToVBO();
+			
 			if (numPoints >= 4) {
-				VAO = manager->controlPointsToVBO();
+				manager->createBSpline();
+				VAO = manager->curvePointsToVBO();
+				//VAO = manager->controlPointsToVBO();
 			}
 		}
 
@@ -120,14 +122,15 @@ void System::Run()
 
 		coreShader.Use();
 
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-		glBindVertexArray(0);
+		//glBindVertexArray(VAO);
+		//glDrawArrays(GL_LINE_STRIP, 0, numPoints);
+		//glBindVertexArray(0);
 
 		if (numPoints >= 4) {
 			glBindVertexArray(VAO);
-			glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-			glDrawArrays(GL_POINTS, 0, numPoints);
+			glDrawArrays(GL_LINE_STRIP, 0, manager->getCurvePoints().size()/3);
+			//glDrawArrays(GL_LINE_STRIP, 0, numPoints);
+			//glDrawArrays(GL_POINTS, 0, numPoints);
 			glBindVertexArray(0);
 		}
 
