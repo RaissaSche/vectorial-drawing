@@ -83,7 +83,7 @@ void System::Run()
 	glUniformMatrix4fv(orthoU, 1, GL_FALSE, glm::value_ptr(ortho));
 	int loc = glGetUniformLocation(coreShader.program, "model");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-	
+
 	coreShader.Use();
 
 	manager = new Manager();
@@ -109,11 +109,9 @@ void System::Run()
 			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
 			numPoints = mouse(mx, my);
-			
+
 			if (numPoints >= 4) {
 				manager->createBSpline();
-				VAO = manager->curvePointsToVBO();
-				//VAO = manager->controlPointsToVBO();
 			}
 		}
 
@@ -122,15 +120,16 @@ void System::Run()
 
 		coreShader.Use();
 
-		//glBindVertexArray(VAO);
-		//glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-		//glBindVertexArray(0);
+		VAO = manager->controlPointsToVBO();
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_LINE_STRIP, 0, numPoints);
+		glDrawArrays(GL_POINTS, 0, numPoints);
+		glBindVertexArray(0);
 
 		if (numPoints >= 4) {
+			VAO = manager->curvePointsToVBO();
 			glBindVertexArray(VAO);
-			glDrawArrays(GL_LINE_STRIP, 0, manager->getCurvePoints().size()/3);
-			//glDrawArrays(GL_LINE_STRIP, 0, numPoints);
-			//glDrawArrays(GL_POINTS, 0, numPoints);
+			glDrawArrays(GL_LINE_STRIP, 0, manager->getCurvePoints().size() / 3);
 			glBindVertexArray(0);
 		}
 
@@ -158,7 +157,7 @@ int System::mouse(double mx, double my)
 }
 
 bool System::arePointsDifferent(glm::vec3* point) {
-	
+
 	glm::vec3* point2 = manager->getControlPoints().back();
 
 	return point->x != point2->x && point->y != point2->y;

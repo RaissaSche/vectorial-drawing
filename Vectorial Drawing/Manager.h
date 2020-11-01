@@ -17,11 +17,15 @@ private:
 	std::vector<glm::vec3*> controlPoints;
 	std::vector<float> curvePoints;
 	GLuint VAOcontrol, VBOcontrol,
-		VAObspline, VBObspline;
+		VAObspline, VBObspline,
+		VAOinternal, VBOinternal,
+		VAOexternal, VBOexternal;
 
 public:
 	//void createCasteljau();
 	void createBSpline();
+	void createInternalCurve();
+	void createExternalCurve();
 	void initializeVAOsVBOs();
 	GLuint controlPointsToVBO();
 	GLuint curvePointsToVBO();

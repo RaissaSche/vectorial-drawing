@@ -33,25 +33,35 @@ void Manager::createBSpline()
 	}
 }
 
+void Manager::createInternalCurve()
+{
+}
+
 void Manager::initializeVAOsVBOs()
 {
+	//control VAO & VBO
+	glGenVertexArrays(1, &VAOcontrol);
+	glGenBuffers(1, &VBOcontrol);
+
+	glBindVertexArray(VAOcontrol);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOcontrol);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	//bspline VAO & VBO
 	glGenVertexArrays(1, &VAObspline);
 	glGenBuffers(1, &VBObspline);
 
 	glBindVertexArray(VAObspline);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBObspline);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
 	glEnableVertexAttribArray(0);
 
-	/*glGenVertexArrays(1, &VAOcontrol);
-	glGenBuffers(1, &VBOcontrol);
-
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAOcontrol);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBOcontrol);*/
+	glBindVertexArray(0);
 }
 
 GLuint Manager::controlPointsToVBO()
@@ -65,27 +75,18 @@ GLuint Manager::controlPointsToVBO()
 		vertex.push_back(v->z);
 	}
 
-	GLuint VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOcontrol);
 
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(GLfloat),
 		vertex.data(), GL_STATIC_DRAW);
 
-	// Position attribute
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-
-	return VAO;
-	//return VAOcontrol;
+	return VAOcontrol;
 }
 
 GLuint Manager::curvePointsToVBO()
 {
+	glBindBuffer(GL_ARRAY_BUFFER, VBObspline);
+
 	glBufferData(GL_ARRAY_BUFFER, curvePoints.size() * sizeof(GLfloat),
 		curvePoints.data(), GL_STATIC_DRAW);
 
