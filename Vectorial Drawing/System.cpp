@@ -101,7 +101,11 @@ void System::Run()
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
 
-#pragma endregion
+#pragma endregion	
+		int colorInU = glGetUniformLocation(coreShader.program, "colorIn");
+
+		glm::vec4 colorIn = glm::vec4(0.7f, 0.8f, 0.9f, 1.0f); //light blue
+		glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
 
 		const int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 
@@ -112,10 +116,12 @@ void System::Run()
 
 			if (numPoints >= 4) {
 				manager->createBSpline();
+				manager->createInternalCurve(10);
+				manager->createExternalCurve(10);
 			}
 		}
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.2f, 0.1f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		coreShader.Use();
@@ -127,9 +133,34 @@ void System::Run()
 		glBindVertexArray(0);
 
 		if (numPoints >= 4) {
+
+			int curveNumPoints = manager->getCurvePoints().size() / 3;
+
+			//bspline
+			colorIn = glm::vec4(0.7f, 0.1f, 0.98f, 1.0f); //purple
+			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
+
 			VAO = manager->curvePointsToVBO();
 			glBindVertexArray(VAO);
-			glDrawArrays(GL_LINE_STRIP, 0, manager->getCurvePoints().size() / 3);
+			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
+			glBindVertexArray(0);
+
+			//internal curve
+			colorIn = glm::vec4(0.9f, 0.2f, 0.9f, 1.0f); //magenta
+			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
+
+			VAO = manager->internalCurvePointsToVBO();
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
+			glBindVertexArray(0);
+
+			//external curve
+			colorIn = glm::vec4(0.3f, 0.3f, 1.0f, 1.0f); //blue
+			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
+
+			VAO = manager->externalCurvePointsToVBO();
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
 			glBindVertexArray(0);
 		}
 

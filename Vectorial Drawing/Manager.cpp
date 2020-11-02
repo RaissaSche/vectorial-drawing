@@ -33,8 +33,78 @@ void Manager::createBSpline()
 	}
 }
 
-void Manager::createInternalCurve()
+void Manager::createInternalCurve(int thickness)
 {
+	float x, y, z, width, height, alpha, teta;
+	float halfPi = glm::half_pi<float>();
+	int size = curvePoints.size();
+	internalCurvePoints.clear();
+
+	for (int i = 0; i < size; i += 3) { //loop through each point: x, y, z
+
+		glm::vec3 p1 = glm::vec3(curvePoints[i],
+									curvePoints[(i + 1) % size],
+									curvePoints[(i + 2) % size]);
+		glm::vec3 p2 = glm::vec3(curvePoints[(i + 3) % size],
+									curvePoints[(i + 4) % size],
+									curvePoints[(i + 5) % size]);
+
+		width = p2.x - p1.x;
+		height = p2.y - p1.y;
+		teta = glm::atan(height / width);
+
+		if (width > 0) {
+			alpha = teta - halfPi;
+		}
+		else {
+			alpha = teta + halfPi;
+		}
+
+		x = glm::cos(alpha) * thickness + p1.x;
+		y = glm::sin(alpha) * thickness + p1.y;
+		z = 0;
+
+		internalCurvePoints.push_back(x);
+		internalCurvePoints.push_back(y);
+		internalCurvePoints.push_back(z);
+	}
+}
+
+void Manager::createExternalCurve(int thickness)
+{
+	float x, y, z, width, height, alpha, teta;
+	float halfPi = glm::half_pi<float>();
+	int size = curvePoints.size();
+	externalCurvePoints.clear();
+
+	for (int i = 0; i < size; i += 3) { //loop through each point: x, y, z
+
+		glm::vec3 p1 = glm::vec3(curvePoints[i],
+			curvePoints[(i + 1) % size],
+			curvePoints[(i + 2) % size]);
+		glm::vec3 p2 = glm::vec3(curvePoints[(i + 3) % size],
+			curvePoints[(i + 4) % size],
+			curvePoints[(i + 5) % size]);
+
+		width = p2.x - p1.x;
+		height = p2.y - p1.y;
+		teta = glm::atan(height / width);
+
+		if (width < 0) {
+			alpha = teta - halfPi;
+		}
+		else {
+			alpha = teta + halfPi;
+		}
+
+		x = glm::cos(alpha) * thickness + p1.x;
+		y = glm::sin(alpha) * thickness + p1.y;
+		z = 0;
+
+		externalCurvePoints.push_back(x);
+		externalCurvePoints.push_back(y);
+		externalCurvePoints.push_back(z);
+	}
 }
 
 void Manager::initializeVAOsVBOs()
@@ -57,6 +127,30 @@ void Manager::initializeVAOsVBOs()
 
 	glBindVertexArray(VAObspline);
 	glBindBuffer(GL_ARRAY_BUFFER, VBObspline);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	//internal curve VAO & VBO
+	glGenVertexArrays(1, &VAOinternal);
+	glGenBuffers(1, &VBOinternal);
+
+	glBindVertexArray(VAOinternal);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOinternal);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	//external curve VAO & VBO
+	glGenVertexArrays(1, &VAOexternal);
+	glGenBuffers(1, &VBOexternal);
+
+	glBindVertexArray(VAOexternal);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOexternal);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
 	glEnableVertexAttribArray(0);
@@ -91,6 +185,26 @@ GLuint Manager::curvePointsToVBO()
 		curvePoints.data(), GL_STATIC_DRAW);
 
 	return VAObspline;
+}
+
+GLuint Manager::internalCurvePointsToVBO()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBOinternal);
+
+	glBufferData(GL_ARRAY_BUFFER, internalCurvePoints.size() * sizeof(GLfloat),
+		internalCurvePoints.data(), GL_STATIC_DRAW);
+
+	return VAOinternal;
+}
+
+GLuint Manager::externalCurvePointsToVBO()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBOexternal);
+
+	glBufferData(GL_ARRAY_BUFFER, externalCurvePoints.size() * sizeof(GLfloat),
+		externalCurvePoints.data(), GL_STATIC_DRAW);
+
+	return VAOexternal;
 }
 
 std::vector<glm::vec3*> Manager::getControlPoints()
