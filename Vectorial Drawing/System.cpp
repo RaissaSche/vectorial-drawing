@@ -95,15 +95,25 @@ void System::Run()
 
 		glfwPollEvents();
 
+		glm::vec4 clearColor = glm::vec4(0.2f, 0.1f, 0.4f, 1.0f);
+
 #pragma region Input Handling
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
 
-#pragma endregion	
-		int colorInU = glGetUniformLocation(coreShader.program, "colorIn");
+		if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
+			clearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //white
+		}
 
+		if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
+			clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); //black
+		}
+
+#pragma endregion	
+		
+		int colorInU = glGetUniformLocation(coreShader.program, "colorIn");
 		glm::vec4 colorIn = glm::vec4(0.7f, 0.8f, 0.9f, 1.0f); //light blue
 		glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
 
@@ -121,7 +131,7 @@ void System::Run()
 			}
 		}
 
-		glClearColor(0.2f, 0.1f, 0.4f, 1.0f);
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		coreShader.Use();
