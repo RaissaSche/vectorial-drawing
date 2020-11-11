@@ -62,6 +62,8 @@ int System::OpenGLSetup()
 
 	glPointSize(10.0f);
 
+	//glfwSetKeyCallback(window, keyCallback);
+
 	return EXIT_SUCCESS;
 }
 
@@ -87,7 +89,8 @@ void System::Run()
 	coreShader.Use();
 
 	manager = new Manager();
-	manager->initializeVAOsVBOs();
+	manager->setWindowHeight(HEIGHT);
+	manager->getCurveManager()->initializeVAOsVBOs();
 	GLuint VAO = 0;
 	int numPoints = 0;
 
@@ -95,7 +98,7 @@ void System::Run()
 
 		glfwPollEvents();
 
-		glm::vec4 clearColor = glm::vec4(0.2f, 0.1f, 0.4f, 1.0f);
+		bool isPressed = false;
 
 #pragma region Input Handling
 
@@ -103,40 +106,55 @@ void System::Run()
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
 
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+			manager->setEdit(true);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			manager->setEdit(false);
+		}
+
 		if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
-			clearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); //white
+			if (manager->getEdit() && editClick) {
+				manager->addHeight();
+			}
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
-			clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); //black
+			if (manager->getEdit() && editClick) {
+				manager->subtractHeight();
+			}
 		}
 
 #pragma endregion	
-		
-		int colorInU = glGetUniformLocation(coreShader.program, "colorIn");
-		glm::vec4 colorIn = glm::vec4(0.7f, 0.8f, 0.9f, 1.0f); //light blue
-		glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
 
 		const int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 
 		if (state == GLFW_PRESS) {
+
 			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
-			numPoints = mouse(mx, my);
+			numPoints = manager->mouse(mx, my);
 
-			if (numPoints >= 4) {
-				manager->createBSpline();
-				manager->createInternalCurve(10);
-				manager->createExternalCurve(10);
+			if (manager->getEdit()) {
+				editClick = true;
+				manager->editPoints(mx, my, numPoints);
+				manager->createObj();
+			}
+			else {
+				editClick = false;
+				if (numPoints >= 4) {
+					manager->createCurves();
+				}
 			}
 		}
 
-		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+		glClearColor(0.2f, 0.1f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		coreShader.Use();
 
-		VAO = manager->controlPointsToVBO();
+		VAO = manager->getCurveManager()->controlPointsToVBO();
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_LINE_STRIP, 0, numPoints);
 		glDrawArrays(GL_POINTS, 0, numPoints);
@@ -144,34 +162,27 @@ void System::Run()
 
 		if (numPoints >= 4) {
 
-			int curveNumPoints = manager->getCurvePoints().size() / 3;
+			int curveNumPoints = manager->getCurveManager()->getBSplineCurvePoints().size() / 3;
 
 			//bspline
-			colorIn = glm::vec4(0.7f, 0.1f, 0.98f, 1.0f); //purple
-			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
-
-			VAO = manager->curvePointsToVBO();
+			VAO = manager->getCurveManager()->curvePointsToVBO();
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
 			glBindVertexArray(0);
 
 			//internal curve
-			colorIn = glm::vec4(0.9f, 0.2f, 0.9f, 1.0f); //magenta
-			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
-
-			VAO = manager->internalCurvePointsToVBO();
+			VAO = manager->getCurveManager()->internalCurvePointsToVBO();
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
 			glBindVertexArray(0);
 
 			//external curve
-			colorIn = glm::vec4(0.3f, 0.3f, 1.0f, 1.0f); //blue
-			glUniform4fv(colorInU, 1, glm::value_ptr(colorIn));
-
-			VAO = manager->externalCurvePointsToVBO();
+			VAO = manager->getCurveManager()->externalCurvePointsToVBO();
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
 			glBindVertexArray(0);
+
+			manager->createObj();
 		}
 
 		glfwSwapBuffers(window);
@@ -184,22 +195,4 @@ void System::Finish()
 	coreShader.Delete();
 
 	glfwTerminate();
-}
-
-int System::mouse(double mx, double my)
-{
-	glm::vec3* mousePos = new glm::vec3(mx, HEIGHT - my, 0.0f);
-
-	if (manager->getControlPoints().empty() || arePointsDifferent(mousePos)) {
-		manager->addControlPoint(mousePos);
-	}
-
-	return manager->getControlPoints().size();
-}
-
-bool System::arePointsDifferent(glm::vec3* point) {
-
-	glm::vec3* point2 = manager->getControlPoints().back();
-
-	return point->x != point2->x && point->y != point2->y;
 }

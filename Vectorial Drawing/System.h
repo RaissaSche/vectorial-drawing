@@ -23,6 +23,7 @@ private:
 	int screenWidth, screenHeight;
 	float lastX = 400, lastY = 300;
 	bool firstMouse = true;
+	bool editClick = false;
 	Manager* manager;
 
 public:
@@ -40,9 +41,6 @@ public:
 	void Run();
 
 	void Finish();
-
-	int mouse(double mx, double my);
-	bool arePointsDifferent(glm::vec3* point);
 };
 
 #endif

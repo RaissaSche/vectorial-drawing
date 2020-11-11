@@ -1,9 +1,8 @@
 #version 330 core
 
 out vec4 color;
-
-uniform vec4 colorIn;
+in float zOut;
 
 void main(){
-	color = colorIn;
+	color = vec4(zOut, zOut, 1.0, 1.0);
 }

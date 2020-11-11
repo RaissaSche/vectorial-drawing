@@ -1,223 +1,185 @@
 #include "Manager.h"
+#include <iostream>
+#include <fstream>
 
 
-
-void Manager::createBSpline()
+CurveManager* Manager::getCurveManager()
 {
-	float inc = 1.0f / 100.0f;
-	float x, y, z;
-	int size = controlPoints.size();
-	curvePoints.clear();
+	return curveManager;
+}
 
-	for (int i = 0; i < size; i++) {
-		for (float t = 0; t <= 1; t += inc) {
-			x = (((-1 * pow(t, 3) + 3 * pow(t, 2) - 3 * t + 1) * controlPoints[i]->x +
-				(3 * pow(t, 3) - 6 * pow(t, 2) + 4) * controlPoints[(i + 1) % size]->x +
-				(-3 * pow(t, 3) + 3 * pow(t, 2) + 3 * t + 1) * controlPoints[(i + 2) % size]->x +
-				(1 * pow(t, 3)) * controlPoints[(i + 3) % size]->x) / 6);
+void Manager::createCurves()
+{
+	curveManager->createBSpline();
+	curveManager->createInternalCurve(10);
+	curveManager->createExternalCurve(10);
+}
 
-			y = (((-1 * pow(t, 3) + 3 * pow(t, 2) - 3 * t + 1) * controlPoints[i]->y +
-				(3 * pow(t, 3) - 6 * pow(t, 2) + 4) * controlPoints[(i + 1) % size]->y +
-				(-3 * pow(t, 3) + 3 * pow(t, 2) + 3 * t + 1) * controlPoints[(i + 2) % size]->y +
-				(1 * pow(t, 3)) * controlPoints[(i + 3) % size]->y) / 6);
+int Manager::mouse(double mx, double my)
+{
+	glm::vec3* mousePos = new glm::vec3(mx, windowHeight - my, 0.0f);
 
-			z = (((-1 * pow(t, 3) + 3 * pow(t, 2) - 3 * t + 1) * controlPoints[i]->z +
-				(3 * pow(t, 3) - 6 * pow(t, 2) + 4) * controlPoints[(i + 1) % size]->z +
-				(-3 * pow(t, 3) + 3 * pow(t, 2) + 3 * t + 1) * controlPoints[(i + 2) % size]->z +
-				(1 * pow(t, 3)) * controlPoints[(i + 3) % size]->z) / 6);
+	if (edit == false && (curveManager->getControlPoints().empty() || arePointsDifferent(mousePos))) {
+		curveManager->addControlPoint(mousePos);
+	}
 
-			curvePoints.push_back(x);
-			curvePoints.push_back(y);
-			curvePoints.push_back(z);
+	return curveManager->getControlPoints().size();
+}
+
+bool Manager::arePointsDifferent(glm::vec3* point) {
+
+	glm::vec3* point2 = curveManager->getControlPoints().back();
+
+	return point->x != point2->x && point->y != point2->y;
+}
+
+void Manager::editPoints(double mx, double my, int numPoints)
+{
+	glm::vec3* mousePos = new glm::vec3(mx, windowHeight - my, 0.0f);
+
+	bool firstItem = true;
+	float distance, shortestDistance;
+
+	for (int i = 0; i < numPoints; i++) {
+		//raiz(pow(xb - xa) + pow(yb - ya) + pow(zb - za))
+		glm::vec3* controlPos = curveManager->getControlPoints()[i];
+		distance = glm::sqrt(glm::exp2(mousePos->x - controlPos->x) +
+			glm::exp2(mousePos->y - controlPos->y) +
+			glm::exp2(mousePos->z - controlPos->z));
+
+		if (firstItem) {
+			shortestDistance = distance;
+			firstItem = false;
+		}
+
+		if (distance < shortestDistance) {
+			shortestDistancePointToClick = i;
 		}
 	}
 }
 
-void Manager::createInternalCurve(int thickness)
+void Manager::setWindowHeight(int windowHeight)
 {
-	float x, y, z, width, height, alpha, teta;
-	float halfPi = glm::half_pi<float>();
-	int size = curvePoints.size();
-	internalCurvePoints.clear();
+	this->windowHeight = windowHeight;
+}
 
-	for (int i = 0; i < size; i += 3) { //loop through each point: x, y, z
+void Manager::addHeight()
+{
+	int size = curveManager->getControlPoints().size();
+	int position;
 
-		glm::vec3 p1 = glm::vec3(curvePoints[i],
-									curvePoints[(i + 1) % size],
-									curvePoints[(i + 2) % size]);
-		glm::vec3 p2 = glm::vec3(curvePoints[(i + 3) % size],
-									curvePoints[(i + 4) % size],
-									curvePoints[(i + 5) % size]);
+	if (shortestDistancePointToClick == -1) {
+		position = size;
+	}
+	else {
+		position = shortestDistancePointToClick;
+	}
 
-		width = p2.x - p1.x;
-		height = p2.y - p1.y;
-		teta = glm::atan(height / width);
-
-		if (width > 0) {
-			alpha = teta - halfPi;
+	if (size >= 4) {
+		glm::vec3* lastPoint = curveManager->getControlPoints()[position];
+		if (lastPoint->z >= 0 && lastPoint->z < 1) {
+			lastPoint->z += 0.25f;
+			curveManager->editControlPoint(lastPoint, position);
 		}
-		else {
-			alpha = teta + halfPi;
-		}
-
-		x = glm::cos(alpha) * thickness + p1.x;
-		y = glm::sin(alpha) * thickness + p1.y;
-		z = 0;
-
-		internalCurvePoints.push_back(x);
-		internalCurvePoints.push_back(y);
-		internalCurvePoints.push_back(z);
 	}
 }
 
-void Manager::createExternalCurve(int thickness)
+void Manager::subtractHeight()
 {
-	float x, y, z, width, height, alpha, teta;
-	float halfPi = glm::half_pi<float>();
-	int size = curvePoints.size();
-	externalCurvePoints.clear();
+	int size = curveManager->getControlPoints().size();
+	int position;
 
-	for (int i = 0; i < size; i += 3) { //loop through each point: x, y, z
-
-		glm::vec3 p1 = glm::vec3(curvePoints[i],
-			curvePoints[(i + 1) % size],
-			curvePoints[(i + 2) % size]);
-		glm::vec3 p2 = glm::vec3(curvePoints[(i + 3) % size],
-			curvePoints[(i + 4) % size],
-			curvePoints[(i + 5) % size]);
-
-		width = p2.x - p1.x;
-		height = p2.y - p1.y;
-		teta = glm::atan(height / width);
-
-		if (width < 0) {
-			alpha = teta - halfPi;
-		}
-		else {
-			alpha = teta + halfPi;
-		}
-
-		x = glm::cos(alpha) * thickness + p1.x;
-		y = glm::sin(alpha) * thickness + p1.y;
-		z = 0;
-
-		externalCurvePoints.push_back(x);
-		externalCurvePoints.push_back(y);
-		externalCurvePoints.push_back(z);
+	if (shortestDistancePointToClick == -1) {
+		position = size;
 	}
-}
-
-void Manager::initializeVAOsVBOs()
-{
-	//control VAO & VBO
-	glGenVertexArrays(1, &VAOcontrol);
-	glGenBuffers(1, &VBOcontrol);
-
-	glBindVertexArray(VAOcontrol);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOcontrol);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-
-	//bspline VAO & VBO
-	glGenVertexArrays(1, &VAObspline);
-	glGenBuffers(1, &VBObspline);
-
-	glBindVertexArray(VAObspline);
-	glBindBuffer(GL_ARRAY_BUFFER, VBObspline);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-
-	//internal curve VAO & VBO
-	glGenVertexArrays(1, &VAOinternal);
-	glGenBuffers(1, &VBOinternal);
-
-	glBindVertexArray(VAOinternal);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOinternal);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-
-	//external curve VAO & VBO
-	glGenVertexArrays(1, &VAOexternal);
-	glGenBuffers(1, &VBOexternal);
-
-	glBindVertexArray(VAOexternal);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOexternal);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-}
-
-GLuint Manager::controlPointsToVBO()
-{
-	std::vector<float> vertex;
-
-	for (int i = 0; i < controlPoints.size(); i++) {
-		glm::vec3* v = controlPoints[i];
-		vertex.push_back(v->x);
-		vertex.push_back(v->y);
-		vertex.push_back(v->z);
+	else {
+		position = shortestDistancePointToClick;
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBOcontrol);
+	if (size >= 4) {
+		glm::vec3* lastPoint = curveManager->getControlPoints()[position];
+		if (lastPoint->z > 0 && lastPoint->z <= 1) {
+			lastPoint->z -= 0.25f;
+			curveManager->editControlPoint(lastPoint, position);
+		}
+	}
 
-	glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(GLfloat),
-		vertex.data(), GL_STATIC_DRAW);
-
-	return VAOcontrol;
 }
 
-GLuint Manager::curvePointsToVBO()
+bool Manager::getEdit()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, VBObspline);
-
-	glBufferData(GL_ARRAY_BUFFER, curvePoints.size() * sizeof(GLfloat),
-		curvePoints.data(), GL_STATIC_DRAW);
-
-	return VAObspline;
+	return edit;
 }
 
-GLuint Manager::internalCurvePointsToVBO()
+void Manager::setEdit(bool edit)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, VBOinternal);
-
-	glBufferData(GL_ARRAY_BUFFER, internalCurvePoints.size() * sizeof(GLfloat),
-		internalCurvePoints.data(), GL_STATIC_DRAW);
-
-	return VAOinternal;
+	this->edit = edit;
 }
 
-GLuint Manager::externalCurvePointsToVBO()
+//gravar o y no lugar do z, e vice-versa
+//multiplicar a z com uma variável de altura, 0 a 1 é muito baixinho (10)
+//primeiro: gravar todos os vértices (x, y e z) da curva interna, e depois da externa
+//segundo: gravar os mapeamentos de textura: 
+	//conseguir uma foto próxima de asfalto, traçar para retângulos
+//um grupo definindo a pista inteira "pista"
+//mtl fixo: 
+//normal: 0 1 0 pega vetor p[i] até p[i + 1] + ponto inicial de uma curva (p[i] da outra curva?)até a outra e produtoVetorial() neles!
+//faces: vértices interna começam em 1 e terminam em N 
+	//da externa começam em N+1 até 2N
+	//for de i==1 até i<=N
+		//i e i + 1 e i + N ----- i + N e i + 1 e i+N+1
+
+void Manager::createObj()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, VBOexternal);
+	auxInternal = curveManager->getInternalCurvePoints();
+	auxExternal = curveManager->getExternalCurvePoints();
 
-	glBufferData(GL_ARRAY_BUFFER, externalCurvePoints.size() * sizeof(GLfloat),
-		externalCurvePoints.data(), GL_STATIC_DRAW);
+	std::ofstream arq("track.obj");
 
-	return VAOexternal;
+	for (int i = 0; i < auxInternal.size(); i += 3) {//loop through each point: x, y, z
+		arq << "v " << auxInternal[i] << " " //x
+					<< auxInternal[i + 2] * 10 << " " //z
+					<< auxInternal[i + 1] << std::endl; //y
+	}
+
+	arq << " " << std::endl;
+
+	for (int i = 0; i < auxExternal.size(); i += 3) {
+		arq << "v " << auxExternal[i] << " " //x
+			<< auxExternal[i + 2] * 10 << " " //z
+			<< auxExternal[i + 1] << std::endl; //y
+	}
+
+	arq << " " << std::endl;
+
+	arq << "vt " << 0 << " " << 0 << std::endl;
+	arq << "vt " << 1 << " " << 0 << std::endl;
+	arq << "vt " << 1 << " " << 1 << std::endl;
+	arq << "vt " << 0 << " " << 1 << std::endl;
+
+	//vn
+
+	arq << "g track" << std::endl;
+	arq << "usemtl track" << std::endl;
+
+	//faces
+
+	arq.close();
+
 }
 
-std::vector<glm::vec3*> Manager::getControlPoints()
+/*
+static void System::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	return controlPoints;
+	if (key == GLFW_KEY_KP_ADD && action == GLFW_PRESS) {
+		if (curveManager->getControlPoints().size() >= 4) {
+			glm::vec3* lastPoint = curveManager->getControlPoints().back();
+			if (lastPoint->z >= 0 && lastPoint->z < 1) {
+				curveManager->getControlPoints().pop_back();
+				lastPoint->z += 0.25f;
+				curveManager->addControlPoint(lastPoint);
+			}
+		}
+	}
 }
-
-std::vector<float> Manager::getCurvePoints()
-{
-	return curvePoints;
-}
-
-void Manager::addControlPoint(glm::vec3* point)
-{
-	controlPoints.push_back(point);
-}
+*/
