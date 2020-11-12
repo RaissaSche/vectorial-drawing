@@ -1,6 +1,4 @@
 #include "Manager.h"
-#include <iostream>
-#include <fstream>
 
 
 CurveManager* Manager::getCurveManager()
@@ -114,58 +112,6 @@ bool Manager::getEdit()
 void Manager::setEdit(bool edit)
 {
 	this->edit = edit;
-}
-
-//gravar o y no lugar do z, e vice-versa
-//multiplicar a z com uma variável de altura, 0 a 1 é muito baixinho (10)
-//primeiro: gravar todos os vértices (x, y e z) da curva interna, e depois da externa
-//segundo: gravar os mapeamentos de textura: 
-	//conseguir uma foto próxima de asfalto, traçar para retângulos
-//um grupo definindo a pista inteira "pista"
-//mtl fixo: 
-//normal: 0 1 0 pega vetor p[i] até p[i + 1] + ponto inicial de uma curva (p[i] da outra curva?)até a outra e produtoVetorial() neles!
-//faces: vértices interna começam em 1 e terminam em N 
-	//da externa começam em N+1 até 2N
-	//for de i==1 até i<=N
-		//i e i + 1 e i + N ----- i + N e i + 1 e i+N+1
-
-void Manager::createObj()
-{
-	auxInternal = curveManager->getInternalCurvePoints();
-	auxExternal = curveManager->getExternalCurvePoints();
-
-	std::ofstream arq("track.obj");
-
-	for (int i = 0; i < auxInternal.size(); i += 3) {//loop through each point: x, y, z
-		arq << "v " << auxInternal[i] << " " //x
-					<< auxInternal[i + 2] * 10 << " " //z
-					<< auxInternal[i + 1] << std::endl; //y
-	}
-
-	arq << " " << std::endl;
-
-	for (int i = 0; i < auxExternal.size(); i += 3) {
-		arq << "v " << auxExternal[i] << " " //x
-			<< auxExternal[i + 2] * 10 << " " //z
-			<< auxExternal[i + 1] << std::endl; //y
-	}
-
-	arq << " " << std::endl;
-
-	arq << "vt " << 0 << " " << 0 << std::endl;
-	arq << "vt " << 1 << " " << 0 << std::endl;
-	arq << "vt " << 1 << " " << 1 << std::endl;
-	arq << "vt " << 0 << " " << 1 << std::endl;
-
-	//vn
-
-	arq << "g track" << std::endl;
-	arq << "usemtl track" << std::endl;
-
-	//faces
-
-	arq.close();
-
 }
 
 /*

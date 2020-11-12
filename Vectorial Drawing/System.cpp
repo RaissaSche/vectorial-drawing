@@ -91,6 +91,7 @@ void System::Run()
 	manager = new Manager();
 	manager->setWindowHeight(HEIGHT);
 	manager->getCurveManager()->initializeVAOsVBOs();
+	objManager = new ObjManager();
 	GLuint VAO = 0;
 	int numPoints = 0;
 
@@ -139,7 +140,9 @@ void System::Run()
 			if (manager->getEdit()) {
 				editClick = true;
 				manager->editPoints(mx, my, numPoints);
-				manager->createObj();
+				if (numPoints >= 4) {
+					objManager->createObj(manager->getCurveManager());
+				}
 			}
 			else {
 				editClick = false;
@@ -182,7 +185,7 @@ void System::Run()
 			glDrawArrays(GL_LINE_STRIP, 0, curveNumPoints);
 			glBindVertexArray(0);
 
-			manager->createObj();
+			objManager->createObj(manager->getCurveManager());
 		}
 
 		glfwSwapBuffers(window);

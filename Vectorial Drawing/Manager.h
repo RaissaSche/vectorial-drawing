@@ -14,7 +14,6 @@ private:
 	int shortestDistancePointToClick = -1;
 	bool edit = false;
 	int windowHeight;
-	std::vector<float> auxInternal, auxExternal;
 
 public:
 	void createCurves();
@@ -29,8 +28,5 @@ public:
 	void subtractHeight();
 	bool getEdit();
 	void setEdit(bool edit);
-
-	void createObj();
-	//static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 

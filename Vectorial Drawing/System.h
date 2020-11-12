@@ -14,6 +14,7 @@
 #include "Shader.h"
 #include "Time.h"
 #include "Manager.h"
+#include "ObjManager.h"
 
 class System
 {
@@ -25,6 +26,7 @@ private:
 	bool firstMouse = true;
 	bool editClick = false;
 	Manager* manager;
+	ObjManager* objManager;
 
 public:
 	GLFWwindow* window;
