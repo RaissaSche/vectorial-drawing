@@ -148,6 +148,7 @@ void System::Run()
 				editClick = false;
 				if (numPoints >= 4) {
 					manager->createCurves();
+					objManager->createBSplinePointsTxt(manager->getCurveManager());
 				}
 			}
 		}

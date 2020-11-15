@@ -2,19 +2,6 @@
 #include <iostream>
 #include <fstream>
 
-//gravar o y no lugar do z, e vice-versa
-//multiplicar a z com uma variável de altura, 0 a 1 é muito baixinho (10)
-//primeiro: gravar todos os vértices (x, y e z) da curva interna, e depois da externa
-//segundo: gravar os mapeamentos de textura: 
-	//conseguir uma foto próxima de asfalto, traçar para retângulos
-//um grupo definindo a pista inteira "pista"
-//mtl fixo: 
-//normal: 0 1 0 pega vetor p[i] até p[i + 1] + ponto inicial de uma curva (p[i] da outra curva?)até a outra e produtoVetorial() neles!
-//faces: vértices interna começam em 1 e terminam em N 
-	//da externa começam em N+1 até 2N
-	//for de i==1 até i<=N
-		//i e i + 1 e i + N ----- i + N e i + 1 e i+N+1
-
 void ObjManager::createObj(CurveManager* curveManager)
 {
 	auxInternal = curveManager->getInternalCurvePoints();
@@ -82,11 +69,6 @@ void ObjManager::createObj(CurveManager* curveManager)
 
 	//f
 
-	//faces: vértices interna começam em 1 e terminam em N 
-	//da externa começam em N+1 até 2N
-	//for de i==1 até i<=N
-		//i e i + 1 e i + N ----- i + N e i + 1 e i+N+1
-
 	int vnNum = 1;
 	bool isTex1 = true;
 	glm::vec3 tex1 = glm::vec3(1, 2, 4);
@@ -116,4 +98,18 @@ void ObjManager::createObj(CurveManager* curveManager)
 glm::vec3 ObjManager::createVectorFrom2Points(glm::vec3 a, glm::vec3 b)
 {
 	return glm::vec3(b.x - a.x, b.y - a.y, b.z - a.z);
+}
+
+void ObjManager::createBSplinePointsTxt(CurveManager* curveManager)
+{
+	std::ofstream arq("bspline.txt");
+
+	auxBSpline = curveManager->getBSplineCurvePoints();
+	int size = auxBSpline.size();
+
+	for (int i = 0; i < size; i++) {
+		arq << auxBSpline[i] << " ";
+	}
+
+	arq.close();
 }
