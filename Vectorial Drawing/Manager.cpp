@@ -35,22 +35,23 @@ void Manager::editPoints(double mx, double my, int numPoints)
 {
 	glm::vec3* mousePos = new glm::vec3(mx, windowHeight - my, 0.0f);
 
-	bool firstItem = true;
 	float distance, shortestDistance;
 
 	for (int i = 0; i < numPoints; i++) {
 		//raiz(pow(xb - xa) + pow(yb - ya) + pow(zb - za))
 		glm::vec3* controlPos = curveManager->getControlPoints()[i];
-		distance = glm::sqrt(glm::exp2(mousePos->x - controlPos->x) +
-			glm::exp2(mousePos->y - controlPos->y) +
-			glm::exp2(mousePos->z - controlPos->z));
+		distance = glm::sqrt(
+			pow(mousePos->x - controlPos->x, 2) +
+			pow(mousePos->y - controlPos->y, 2) +
+			pow(mousePos->z - controlPos->z, 2));
 
-		if (firstItem) {
+		if (i == 0) {
 			shortestDistance = distance;
-			firstItem = false;
+			shortestDistancePointToClick = 0;
 		}
 
 		if (distance < shortestDistance) {
+			shortestDistance = distance;
 			shortestDistancePointToClick = i;
 		}
 	}
@@ -67,7 +68,7 @@ void Manager::addHeight()
 	int position;
 
 	if (shortestDistancePointToClick == -1) {
-		position = size;
+		position = size - 1;
 	}
 	else {
 		position = shortestDistancePointToClick;
@@ -113,19 +114,3 @@ void Manager::setEdit(bool edit)
 {
 	this->edit = edit;
 }
-
-/*
-static void System::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_KP_ADD && action == GLFW_PRESS) {
-		if (curveManager->getControlPoints().size() >= 4) {
-			glm::vec3* lastPoint = curveManager->getControlPoints().back();
-			if (lastPoint->z >= 0 && lastPoint->z < 1) {
-				curveManager->getControlPoints().pop_back();
-				lastPoint->z += 0.25f;
-				curveManager->addControlPoint(lastPoint);
-			}
-		}
-	}
-}
-*/

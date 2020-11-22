@@ -62,7 +62,7 @@ void CurveManager::createInternalCurve(int thickness)
 
 		x = glm::cos(alpha) * thickness + p1.x;
 		y = glm::sin(alpha) * thickness + p1.y;
-		z = 0;
+		z = bSplineCurvePoints[(i + 2) % size];
 
 		internalCurvePoints.push_back(x);
 		internalCurvePoints.push_back(y);
@@ -99,7 +99,7 @@ void CurveManager::createExternalCurve(int thickness)
 
 		x = glm::cos(alpha) * thickness + p1.x;
 		y = glm::sin(alpha) * thickness + p1.y;
-		z = 0;
+		z = bSplineCurvePoints[(i + 2) % size];
 
 		externalCurvePoints.push_back(x);
 		externalCurvePoints.push_back(y);

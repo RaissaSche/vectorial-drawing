@@ -25,6 +25,7 @@ private:
 	float lastX = 400, lastY = 300;
 	bool firstMouse = true;
 	bool editClick = false;
+	double mx = 0, my = 0, numPoints = 0;
 	Manager* manager;
 	ObjManager* objManager;
 

@@ -93,7 +93,6 @@ void System::Run()
 	manager->getCurveManager()->initializeVAOsVBOs();
 	objManager = new ObjManager();
 	GLuint VAO = 0;
-	int numPoints = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -117,13 +116,23 @@ void System::Run()
 
 		if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
 			if (manager->getEdit() && editClick) {
+				manager->editPoints(mx, my, numPoints);
 				manager->addHeight();
+				manager->createCurves();
+				if (numPoints >= 4) {
+					objManager->createObj(manager->getCurveManager());
+				}
 			}
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
 			if (manager->getEdit() && editClick) {
+				manager->editPoints(mx, my, numPoints);
 				manager->subtractHeight();
+				manager->createCurves();
+				if (numPoints >= 4) {
+					objManager->createObj(manager->getCurveManager());
+				}
 			}
 		}
 
@@ -132,22 +141,17 @@ void System::Run()
 		const int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 
 		if (state == GLFW_PRESS) {
-
-			double mx, my;
 			glfwGetCursorPos(window, &mx, &my);
 			numPoints = manager->mouse(mx, my);
 
 			if (manager->getEdit()) {
 				editClick = true;
-				manager->editPoints(mx, my, numPoints);
-				if (numPoints >= 4) {
-					objManager->createObj(manager->getCurveManager());
-				}
 			}
 			else {
 				editClick = false;
 				if (numPoints >= 4) {
 					manager->createCurves();
+					objManager->createObj(manager->getCurveManager());
 					objManager->createBSplinePointsTxt(manager->getCurveManager());
 				}
 			}
