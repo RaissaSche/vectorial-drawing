@@ -11,6 +11,8 @@ void ObjManager::createObj(CurveManager* curveManager)
 
 	std::ofstream arq("track.obj");
 
+	arq << "mtllib track.mtl" << std::endl;
+
 	//v
 	for (int i = 0; i < size; i += 3) {//loop through each point: x, y, z
 		arq << "v " << auxInternal[i] << " " //x
