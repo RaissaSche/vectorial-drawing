@@ -1,6 +1,13 @@
 #include "Manager.h"
 
 
+Manager::Manager()
+{
+	curveManager = new CurveManager();
+	shortestDistancePointToClick = -1;
+	edit = false;
+}
+
 CurveManager* Manager::getCurveManager()
 {
 	return curveManager;

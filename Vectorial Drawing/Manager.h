@@ -10,12 +10,13 @@
 class Manager
 {
 private:
-	CurveManager* curveManager = new CurveManager();
-	int shortestDistancePointToClick = -1;
-	bool edit = false;
+	CurveManager* curveManager;
+	int shortestDistancePointToClick;
+	bool edit;
 	int windowHeight;
 
 public:
+	Manager();
 	void createCurves();
 	CurveManager* getCurveManager();
 

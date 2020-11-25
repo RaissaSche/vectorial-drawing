@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "CurveManager.h"
-	
+
 class ObjManager
 {
 private:

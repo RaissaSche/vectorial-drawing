@@ -4,6 +4,13 @@
 
 System::System()
 {
+	lastX = 400;
+	lastY = 300;
+	firstMouse = true;
+	editClick = false;
+	mx = 0;
+	my = 0;
+	numPoints = 0;
 }
 
 
@@ -191,6 +198,7 @@ void System::Run()
 			glBindVertexArray(0);
 
 			objManager->createObj(manager->getCurveManager());
+			objManager->createBSplinePointsTxt(manager->getCurveManager());
 		}
 
 		glfwSwapBuffers(window);

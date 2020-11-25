@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 
+
 void ObjManager::createObj(CurveManager* curveManager)
 {
 	auxInternal = curveManager->getInternalCurvePoints();
@@ -78,12 +79,12 @@ void ObjManager::createObj(CurveManager* curveManager)
 		//v1/t1/n1
 
 		arq << "f " << i << "/" << tex1.x << "/" << vnNum << " "
-					<< i + 1 << "/" << tex1.y << "/" << vnNum << " "
-					<< i + size << "/" << tex1.z << "/" << vnNum << std::endl;
+			<< i + 1 << "/" << tex1.y << "/" << vnNum << " "
+			<< i + size << "/" << tex1.z << "/" << vnNum << std::endl;
 
 		arq << "f " << i + size << "/" << tex2.x << "/" << vnNum << " "
-					<< i + 1 << "/" << tex2.y << "/" << vnNum << " "
-					<< i + size + 1 << "/" << tex2.z << "/" << vnNum << std::endl;
+			<< i + 1 << "/" << tex2.y << "/" << vnNum << " "
+			<< i + size + 1 << "/" << tex2.z << "/" << vnNum << std::endl;
 
 		vnNum++;
 		if (vnNum >= 4) {
@@ -106,6 +107,8 @@ void ObjManager::createBSplinePointsTxt(CurveManager* curveManager)
 
 	auxBSpline = curveManager->getBSplineCurvePoints();
 	int size = auxBSpline.size();
+
+	arq << size << " ";
 
 	for (int i = 0; i < size; i++) {
 		arq << auxBSpline[i] << " ";

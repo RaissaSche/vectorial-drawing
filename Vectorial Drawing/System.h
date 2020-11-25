@@ -22,10 +22,10 @@ private:
 	// Screen
 	const GLint WIDTH = 800, HEIGHT = 600;
 	int screenWidth, screenHeight;
-	float lastX = 400, lastY = 300;
-	bool firstMouse = true;
-	bool editClick = false;
-	double mx = 0, my = 0, numPoints = 0;
+	float lastX, lastY;
+	bool firstMouse;
+	bool editClick;
+	double mx, my, numPoints;
 	Manager* manager;
 	ObjManager* objManager;
 
